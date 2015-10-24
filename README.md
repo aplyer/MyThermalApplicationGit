@@ -1,0 +1,2 @@
+# MyThermalApplicationGit
+Flir One App
