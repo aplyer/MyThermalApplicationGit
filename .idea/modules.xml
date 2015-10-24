@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MyThermalApplication.iml" filepath="$PROJECT_DIR$/MyThermalApplication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MyThermalApplicationGit.iml" filepath="$PROJECT_DIR$/MyThermalApplicationGit.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/flironesdk/flironesdk.iml" filepath="$PROJECT_DIR$/flironesdk/flironesdk.iml" />
     </modules>
