@@ -9,7 +9,7 @@
     <TextView android:id="@+id/fullscreen_content" android:layout_width="match_parent"
         android:layout_height="match_parent" android:keepScreenOn="true" android:textColor="#33b5e5"
         android:textStyle="bold" android:textSize="50sp" android:gravity="center"
-        android:text="@string/dummy_content" />
+        android:text="Connect Camera" />
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
@@ -34,6 +34,16 @@
             android:id="@+id/imageView"
             android:layout_gravity="center"
             android:scaleType="fitXY" />
+
+        <TextView
+            android:layout_width="104dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="0 C"
+            android:id="@+id/temperatureText"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:visibility="invisible" />
     </FrameLayout>
 
 </FrameLayout>

@@ -10,6 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.graphics.Matrix;
+import android.widget.TextView;
+
 import com.flir.flironesdk.*;
 
 import java.nio.ByteBuffer;
@@ -202,6 +204,18 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
     @Override
     public void onDeviceConnected(Device device) {
         flirDevice = device;
+
+        // globally
+        final TextView temperatureText = (TextView)findViewById(R.id.temperatureText);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                //temperatureText.setText("My Awesome Text");
+                temperatureText.setVisibility(View.VISIBLE);
+            }
+        });
+
         device.startFrameStream(new Device.StreamDelegate() {
             @Override
             public void onFrameReceived(Frame frame) {
@@ -233,14 +247,26 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
 
         //imageBitmap.
         final ImageView imageView = (ImageView)findViewById(R.id.imageView);
+        final TextView temperatureText = (TextView)findViewById(R.id.temperatureText);
+        final short centerTemperature = renderedImage.pixelData()[(height/2) + (width/2)];
 
+
+        final int pixelDataLengeth = renderedImage.pixelData().length;
+        short tempTemp =-1;
+        for(int i =0; i < pixelDataLengeth;i++)
+        {
+            if(renderedImage.pixelData()[i]>tempTemp)
+                tempTemp = renderedImage.pixelData()[i];
+        }
+
+        final short maxTemp = tempTemp;
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 imageView.setImageBitmap(imageBitmap);
+                temperatureText.setText(maxTemp + " C");
+                temperatureText.setVisibility(View.VISIBLE);
             }
         });
-
-
     }
 }
