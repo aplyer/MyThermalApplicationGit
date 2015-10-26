@@ -2,11 +2,16 @@ package com.example.foozi.mythermalapplication;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Display;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
 import android.graphics.Matrix;
@@ -44,6 +49,12 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
     private View mControlsView;
     private boolean mVisible;
     private FrameProcessor frameProcessor;
+    private Paint horizontalCrosshairPaint;
+    private Paint verticalCrosshairPaint;
+    private Paint mShadowPaint;
+    private Paint hollowPaint=new Paint();
+    private float xRes = 0;
+    private float yRes = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,24 +62,43 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
         frameProcessor = new FrameProcessor(this,this, EnumSet.of(RenderedImage.ImageType.BlendedMSXRGBA8888Image)); //This is where you select the type of image
         setContentView(R.layout.activity_fullscreen);
 
+        mShadowPaint = new Paint(0);
+        mShadowPaint.setColor(0xff101010);
+
+        hollowPaint.setStyle(Paint.Style.STROKE);
+
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        xRes = size.x;
+        yRes = size.y;
 
 
         // Set up the user interaction to manually show or hide the system UI.
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                toggle();
+
             }
         });
 
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        findViewById(R.id.imageView).setOnTouchListener(mDelayHideTouchListener);
     }
+
+    float xTouch =-1;
+    float yTouch =-1;
+/*    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        xTouch = e.getX();
+        yTouch = e.getY();
+        return true;
+    }*/
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -88,20 +118,22 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
     private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
         @Override
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (AUTO_HIDE) {
+           /* if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
+            }*/
+            xTouch = motionEvent.getX();
+            yTouch = motionEvent.getY();
             return false;
         }
     };
 
-    private void toggle() {
+    /*private void toggle() {
         if (mVisible) {
             hide();
         } else {
             show();
         }
-    }
+    }*/
 
     private void hide() {
         // Hide UI first
@@ -231,6 +263,7 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
     public void onDeviceDisconnected(Device device) {
 
     }
+short count = 0;
 
     @Override
     public void onFrameProcessed(RenderedImage renderedImage) {
@@ -248,25 +281,37 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
         //imageBitmap.
         final ImageView imageView = (ImageView)findViewById(R.id.imageView);
         final TextView temperatureText = (TextView)findViewById(R.id.temperatureText);
-        final short centerTemperature = renderedImage.pixelData()[(height/2) + (width/2)];
+        final double centerTemperature = (xTouch/xRes)*imageBitmap.getWidth();//renderedImage.pixelData()[(height/2) + (width/2)];
+        Canvas c = new Canvas(imageBitmap);
 
+        float x =(xTouch/xRes)*imageBitmap.getWidth();
+        float y =(yTouch/yRes)*imageBitmap.getHeight();
 
-        final int pixelDataLengeth = renderedImage.pixelData().length;
-        short tempTemp =-1;
-        for(int i =0; i < pixelDataLengeth;i++)
-        {
-            if(renderedImage.pixelData()[i]>tempTemp)
-                tempTemp = renderedImage.pixelData()[i];
-        }
-
-        final short maxTemp = tempTemp;
+        c.drawCircle(x, y, 1, hollowPaint);
+        c.drawLine(x-4,0,3,0,mShadowPaint);
+        c.drawLine(x+2,0,3,0,mShadowPaint);
+        //c.drawCircle(imageBitmap.getWidth()-50, imageBitmap.getHeight()-50, 2, mShadowPaint);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 imageView.setImageBitmap(imageBitmap);
-                temperatureText.setText(maxTemp + " C");
+                temperatureText.setText(centerTemperature + "ºC");
                 temperatureText.setVisibility(View.VISIBLE);
             }
         });
     }
+
+    public void drawCrosshair(float x, float y)
+    {
+
+    }
+/*
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        // Draw the shadow
+        canvas.drawOval(10,10,10,10,mShadowPaint);
+    }*/
+
 }
