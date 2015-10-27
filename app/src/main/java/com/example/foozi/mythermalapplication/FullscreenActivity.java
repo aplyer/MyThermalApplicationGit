@@ -3,6 +3,7 @@ package com.example.foozi.mythermalapplication;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.support.v7.app.ActionBar;
@@ -53,8 +54,11 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
     private Paint verticalCrosshairPaint;
     private Paint mShadowPaint;
     private Paint hollowPaint=new Paint();
+    private Paint outlinePaint=new Paint();
     private float xRes = 0;
     private float yRes = 0;
+    private float yDif = 0;
+    private float yActualRes = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +67,11 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
         setContentView(R.layout.activity_fullscreen);
 
         mShadowPaint = new Paint(0);
-        mShadowPaint.setColor(0xff101010);
-
+        mShadowPaint.setColor(Color.RED);
         hollowPaint.setStyle(Paint.Style.STROKE);
+        hollowPaint.setColor(Color.BLACK);
+        outlinePaint.setStyle(Paint.Style.STROKE);
+        outlinePaint.setColor(Color.BLACK);
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
@@ -74,6 +80,7 @@ public class FullscreenActivity extends AppCompatActivity implements Device.Dele
         Point size = new Point();
         display.getSize(size);
         xRes = size.x;
+        yDif = findViewById(R.id.imageView).getY();
         yRes = size.y;
 
 
@@ -281,22 +288,47 @@ short count = 0;
         //imageBitmap.
         final ImageView imageView = (ImageView)findViewById(R.id.imageView);
         final TextView temperatureText = (TextView)findViewById(R.id.temperatureText);
-        final double centerTemperature = (xTouch/xRes)*imageBitmap.getWidth();//renderedImage.pixelData()[(height/2) + (width/2)];
+        final double centerTemperature = yDif;//(xTouch/xRes)*imageBitmap.getWidth();//renderedImage.pixelData()[(height/2) + (width/2)];
         Canvas c = new Canvas(imageBitmap);
 
         float x =(xTouch/xRes)*imageBitmap.getWidth();
-        float y =(yTouch/yRes)*imageBitmap.getHeight();
+        float y =(((yTouch/yActualRes))*imageBitmap.getHeight());
+        yDif = findViewById(R.id.imageView).getY();
+        yActualRes = yRes-yDif;
 
-        c.drawCircle(x, y, 1, hollowPaint);
-        c.drawLine(x-4,0,3,0,mShadowPaint);
-        c.drawLine(x+2,0,3,0,mShadowPaint);
-        //c.drawCircle(imageBitmap.getWidth()-50, imageBitmap.getHeight()-50, 2, mShadowPaint);
+        //Inside
+        c.drawCircle(x, y, 3, hollowPaint);
+        c.drawLine(x - 15, y, x - 3, y, mShadowPaint);
+        c.drawLine(x+3,y,x+15,y,mShadowPaint);
+        c.drawLine(x, y - 3, x, y - 15, mShadowPaint);
+        c.drawLine(x, y + 3, x, y + 15, mShadowPaint);
+        //Outside
+        c.drawCircle(x, y, 4, hollowPaint);
+        c.drawLine(x - 16, y + 1, x - 4, y + 1, outlinePaint);
+        c.drawLine(x - 16, y-1, x - 4, y-1, outlinePaint);
+        c.drawLine(x - 16, y+1, x - 16, y-1, outlinePaint);
+
+        c.drawLine(x+4,y+1,x+16,y+1,outlinePaint);
+        c.drawLine(x+4,y-1,x+16,y-1,outlinePaint);
+        c.drawLine(x + 16, y+1, x + 16, y-1, outlinePaint);
+
+        c.drawLine(x+1,y-4,x+1,y-16,outlinePaint);
+        c.drawLine(x-1,y-4,x-1,y-16,outlinePaint);
+        c.drawLine(x-1,y-16,x+1,y-16,outlinePaint);
+
+        c.drawLine(x+1,y+4,x+1,y+16,outlinePaint);
+        c.drawLine(x - 1, y + 4, x - 1, y + 16, outlinePaint);
+        c.drawLine(x - 1, y + 16, x + 1, y + 16, outlinePaint);
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 imageView.setImageBitmap(imageBitmap);
                 temperatureText.setText(centerTemperature + "ºC");
                 temperatureText.setVisibility(View.VISIBLE);
+
+                temperatureText.setX(xTouch - 20);
+                temperatureText.setY(yTouch + 100);
             }
         });
     }
